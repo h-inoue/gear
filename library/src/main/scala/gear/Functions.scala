@@ -3,10 +3,6 @@ package gear
 import scala.util.{Try, Success, Failure}
 import scala.util.continuations._
 
-/**
-  * @tparam P
-  * @tparam R
-  */
 trait PartialLayeredFunction[P,R]{
   private[gear] def apply(v:P, thisfun:LayeredFunction[P,R]):P@cpsParam[R,R]
 
@@ -19,45 +15,37 @@ case class Cop[P,R](thisfun: P => R, proceed: P => R)
 
 class ProceedingFunctionNotFoundException extends RuntimeException
 
-object CSF{
+object CDF{
   def apply[S,P,R](src: ContextSource[S], f: S => Cop[P,R] => P => R) = {
-    new ContextSensitiveFunction1(src,f)
+    new ContextDependentFunction1(src,f)
   }
 
   def apply[S,P,R](src: ContextSource[S])
                   (f: S => Cop[P,R] => P => R,
                    p: S => Boolean) = {
-    new ContextSensitiveFunction1(src,f,p)
+    new ContextDependentFunction1(src,f,p)
   }
 
   def apply[S1,S2,P,R](src1: ContextSource[S1],
                        src2: ContextSource[S2],
                        f: S1 => S2 => Cop[P,R] => P => R) = {
-    new ContextSensitiveFunction2(src1,src2,f)
+    new ContextDependentFunction2(src1,src2,f)
   }
 
   def apply[S1,S2,P,R](src1: ContextSource[S1], src2: ContextSource[S2])
                       (f: S1 => S2 => Cop[P,R] => P => R,
                        p: S1 => S2 => Boolean) = {
-    new ContextSensitiveFunction2(src1,src2,f,p)
+    new ContextDependentFunction2(src1,src2,f,p)
   }
 
   def apply[S1,S2,S3,P,R](src1: ContextSource[S1], src2: ContextSource[S2], src3: ContextSource[S3])
                          (f: S1 => S2 => S3 => Cop[P,R] => P => R) = {
-    new ContextSensitiveFunction3(src1,src2,src3,f)
+    new ContextDependentFunction3(src1,src2,src3,f)
   }
 }
 
-/**
-  * ContextSensitiveFunction is
-  * @param src
-  * @param f
-  * @param p
-  * @tparam S
-  * @tparam P
-  * @tparam R
-  */
-class ContextSensitiveFunction1[S, P, R](src: ContextSource[S],
+
+class ContextDependentFunction1[S, P, R](src: ContextSource[S],
                                          f: S => Cop[P,R] => P => R,
                                          p: S => Boolean = (_:S) => true)
   extends PartialLayeredFunction[P,R]{
@@ -76,7 +64,7 @@ class ContextSensitiveFunction1[S, P, R](src: ContextSource[S],
     src.cache(thunk)
 }
 
-class ContextSensitiveFunction2[S1, S2, P, R]
+class ContextDependentFunction2[S1, S2, P, R]
 (s1: ContextSource[S1],
  s2: ContextSource[S2],
  f: S1 => S2 => Cop[P,R] => P => R,
@@ -99,7 +87,7 @@ class ContextSensitiveFunction2[S1, S2, P, R]
     s1.cache(s2.cache(thunk))
 }
 
-class ContextSensitiveFunction3[S1, S2, S3, P, R]
+class ContextDependentFunction3[S1, S2, S3, P, R]
 (s1: ContextSource[S1],
  s2: ContextSource[S2],
  s3: ContextSource[S3],
@@ -148,11 +136,11 @@ class LayeredFunction[P,R](plf: PartialLayeredFunction[P,R])
     case e: Throwable => throw e
   }
 
-  def add(plf: PartialLayeredFunction[P,R]) = {
+  def +=(plf: PartialLayeredFunction[P,R]) = {
     plfs = plf :: plfs
   }
 
-  def remove(plf: PartialLayeredFunction[P,R]) = {
+  def -=(plf: PartialLayeredFunction[P,R]) = {
     plfs = plfs.filter(_ eq plf)
   }
 

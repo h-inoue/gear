@@ -13,9 +13,9 @@ package object gear {
 
   type PLF[P,R] = PartialLayeredFunction[P,R]
 
-  type CSF1[S,P,R] = ContextSensitiveFunction1[S,P,R]
-  type CSF2[S1,S2,P,R] = ContextSensitiveFunction2[S1,S2,P,R]
-  type CSF3[S1,S2,S3,P,R] = ContextSensitiveFunction3[S1,S2,S3,P,R]
+  type CDF1[S,P,R] = ContextDependentFunction1[S,P,R]
+  type CDF2[S1,S2,P,R] = ContextDependentFunction2[S1,S2,P,R]
+  type CDF3[S1,S2,S3,P,R] = ContextDependentFunction3[S1,S2,S3,P,R]
 
   type CS[S] = ContextSource[S]
 
